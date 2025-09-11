@@ -1,0 +1,340 @@
+import express from 'express';
+import { Notification } from '../models/Notification';
+import { NotificationService } from '../services/notificationService';
+import { NotificationGenerator } from '../utils/notificationGenerator';
+import { authenticateToken } from '../middleware/auth';
+import { validateRequest } from '../middleware/validation';
+import { body, query, param } from 'express-validator';
+import { successResponse, errorResponse } from '../utils/response';
+import mongoose from 'mongoose';
+
+const router = express.Router();
+
+// Apply authentication to all notification routes
+router.use(authenticateToken);
+
+/**
+ * GET /api/notifications
+ * Get user's notifications with pagination and filtering
+ */
+router.get('/', [
+  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
+  query('type').optional().isIn(['weather_alert', 'roadmap_milestone', 'crop_analysis', 'marketplace', 'system']),
+  query('isRead').optional().isBoolean().withMessage('isRead must be a boolean'),
+  query('priority').optional().isIn(['low', 'medium', 'high', 'urgent']),
+  validateRequest
+], async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
+    // Build filter query
+    const filter: any = { userId: new mongoose.Types.ObjectId(userId) };
+    
+    if (req.query.type) {
+      filter.type = req.query.type;
+    }
+    
+    if (req.query.isRead !== undefined) {
+      filter.isRead = req.query.isRead === 'true';
+    }
+    
+    if (req.query.priority) {
+      filter.priority = req.query.priority;
+    }
+
+    // Get notifications with pagination
+    const [notifications, total] = await Promise.all([
+      Notification.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Notification.countDocuments(filter)
+    ]);
+
+    // Get unread count
+    const unreadCount = await Notification.countDocuments({
+      userId: new mongoose.Types.ObjectId(userId),
+      isRead: false
+    });
+
+    res.json(successResponse({
+      notifications,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      },
+      unreadCount
+    }));
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json(errorResponse('Failed to fetch notifications'));
+  }
+});
+
+/**
+ * GET /api/notifications/unread-count
+ * Get count of unread notifications
+ */
+router.get('/unread-count', async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+    
+    const unreadCount = await Notification.countDocuments({
+      userId: new mongoose.Types.ObjectId(userId),
+      isRead: false
+    });
+
+    res.json(successResponse({ unreadCount }));
+  } catch (error) {
+    console.error('Error fetching unread count:', error);
+    res.status(500).json(errorResponse('Failed to fetch unread count'));
+  }
+});
+
+/**
+ * PUT /api/notifications/:id/read
+ * Mark notification as read
+ */
+router.put('/:id/read', [
+  param('id').isMongoId().withMessage('Invalid notification ID'),
+  validateRequest
+], async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+    const notificationId = req.params.id;
+
+    const notification = await Notification.findOneAndUpdate(
+      { 
+        _id: new mongoose.Types.ObjectId(notificationId),
+        userId: new mongoose.Types.ObjectId(userId)
+      },
+      { 
+        isRead: true,
+        readAt: new Date()
+      },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json(errorResponse('Notification not found'));
+    }
+
+    res.json(successResponse({ notification }));
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json(errorResponse('Failed to mark notification as read'));
+  }
+});
+
+/**
+ * PUT /api/notifications/mark-all-read
+ * Mark all notifications as read for the user
+ */
+router.put('/mark-all-read', async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+
+    const result = await Notification.updateMany(
+      { 
+        userId: new mongoose.Types.ObjectId(userId),
+        isRead: false
+      },
+      { 
+        isRead: true,
+        readAt: new Date()
+      }
+    );
+
+    res.json(successResponse({ 
+      message: 'All notifications marked as read',
+      modifiedCount: result.modifiedCount
+    }));
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    res.status(500).json(errorResponse('Failed to mark all notifications as read'));
+  }
+});
+
+/**
+ * DELETE /api/notifications/:id
+ * Delete a specific notification
+ */
+router.delete('/:id', [
+  param('id').isMongoId().withMessage('Invalid notification ID'),
+  validateRequest
+], async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+    const notificationId = req.params.id;
+
+    const notification = await Notification.findOneAndDelete({
+      _id: new mongoose.Types.ObjectId(notificationId),
+      userId: new mongoose.Types.ObjectId(userId)
+    });
+
+    if (!notification) {
+      return res.status(404).json(errorResponse('Notification not found'));
+    }
+
+    res.json(successResponse({ message: 'Notification deleted successfully' }));
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json(errorResponse('Failed to delete notification'));
+  }
+});
+
+/**
+ * DELETE /api/notifications/clear-all
+ * Clear all notifications for the user
+ */
+router.delete('/clear-all', async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+
+    const result = await Notification.deleteMany({
+      userId: new mongoose.Types.ObjectId(userId)
+    });
+
+    res.json(successResponse({ 
+      message: 'All notifications cleared',
+      deletedCount: result.deletedCount
+    }));
+  } catch (error) {
+    console.error('Error clearing notifications:', error);
+    res.status(500).json(errorResponse('Failed to clear notifications'));
+  }
+});
+
+/**
+ * POST /api/notifications/preferences
+ * Update notification preferences
+ */
+router.post('/preferences', [
+  body('weatherAlerts').optional().isBoolean(),
+  body('milestoneReminders').optional().isBoolean(),
+  body('cropAnalysis').optional().isBoolean(),
+  body('marketplace').optional().isBoolean(),
+  body('system').optional().isBoolean(),
+  body('pushEnabled').optional().isBoolean(),
+  body('emailEnabled').optional().isBoolean(),
+  body('smsEnabled').optional().isBoolean(),
+  validateRequest
+], async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+    const preferences = req.body;
+
+    const updatedPreferences = await NotificationService.updateUserPreferences(
+      userId,
+      preferences
+    );
+
+    res.json(successResponse({ preferences: updatedPreferences }));
+  } catch (error) {
+    console.error('Error updating notification preferences:', error);
+    res.status(500).json(errorResponse('Failed to update notification preferences'));
+  }
+});
+
+/**
+ * GET /api/notifications/preferences
+ * Get notification preferences
+ */
+router.get('/preferences', async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+
+    const preferences = await NotificationService.getUserPreferences(userId);
+
+    res.json(successResponse({ preferences }));
+  } catch (error) {
+    console.error('Error fetching notification preferences:', error);
+    res.status(500).json(errorResponse('Failed to fetch notification preferences'));
+  }
+});
+
+/**
+ * POST /api/notifications/device-token
+ * Register device token for push notifications
+ */
+router.post('/device-token', [
+  body('deviceToken').notEmpty().withMessage('Device token is required'),
+  body('platform').isIn(['ios', 'android']).withMessage('Platform must be ios or android'),
+  validateRequest
+], async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+    const { deviceToken, platform } = req.body;
+
+    await NotificationService.registerDeviceToken(userId, deviceToken, platform);
+
+    res.json(successResponse({ message: 'Device token registered successfully' }));
+  } catch (error) {
+    console.error('Error registering device token:', error);
+    res.status(500).json(errorResponse('Failed to register device token'));
+  }
+});
+
+/**
+ * DELETE /api/notifications/device-token
+ * Unregister device token
+ */
+router.delete('/device-token', [
+  body('deviceToken').notEmpty().withMessage('Device token is required'),
+  validateRequest
+], async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+    const { deviceToken } = req.body;
+
+    await NotificationService.unregisterDeviceToken(userId, deviceToken);
+
+    res.json(successResponse({ message: 'Device token unregistered successfully' }));
+  } catch (error) {
+    console.error('Error unregistering device token:', error);
+    res.status(500).json(errorResponse('Failed to unregister device token'));
+  }
+});
+
+/**
+ * POST /api/notifications/test
+ * Create a test notification (for development/testing)
+ */
+router.post('/test', [
+  body('type').isIn(['weather_alert', 'roadmap_milestone', 'crop_analysis', 'marketplace', 'system']),
+  body('title').notEmpty().withMessage('Title is required'),
+  body('message').notEmpty().withMessage('Message is required'),
+  body('priority').optional().isIn(['low', 'medium', 'high', 'urgent']),
+  validateRequest
+], async (req, res) => {
+  try {
+    const userId = req.user!.userId;
+    const { type, title, message, priority, data } = req.body;
+
+    const notification = await NotificationService.createAndSendNotification({
+      userId,
+      type,
+      title,
+      message,
+      priority: priority || 'medium',
+      data
+    });
+
+    res.json(successResponse({ 
+      message: 'Test notification created and sent',
+      notification
+    }));
+  } catch (error) {
+    console.error('Error creating test notification:', error);
+    res.status(500).json(errorResponse('Failed to create test notification'));
+  }
+});
+
+export default router;
