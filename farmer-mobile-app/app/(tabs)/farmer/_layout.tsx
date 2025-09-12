@@ -196,6 +196,8 @@ const styles = StyleSheet.create({
   tabIcon: {
     width: 26,
     height: 26,
+    marginLeft: 60,
+    marginTop: 10,
     resizeMode: 'contain',
   },
   centerIconContainer: {
@@ -204,8 +206,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 40,
     height: 40,
-    marginTop: -15,
+    marginTop: -5,
     marginBottom: 5,
+    marginLeft: 60,
   },
   centerIconBg: {
     width: 50,
