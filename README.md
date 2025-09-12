@@ -15,8 +15,8 @@
 | Name | Role | GitHub |
 |------|------|--------|
 | **Saurabh Yadav** | Full Stack Developer & Team Lead | - |
-| **Ayush Jha** | Backend Developer | - |
-| **Prince Vavya** | Frontend Developer | - |
+| **Ayush Jha** | Frontend Developer | - |
+| **Prince Vavya** | AI Engineer | - |
 | **Naaz Ahmedi** | UI/UX Designer | - |
 | **Sakshi Shingole** | UI/UX | - |
 | **Pari Gothi** | UI/UX & Business Model | - |
