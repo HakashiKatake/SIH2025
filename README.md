@@ -6,7 +6,7 @@
 
 ### 🏆 Hackathon Details
 - **Event**: Smart India Hackathon (SIH) 2025
-- **Track**: Mindspace Hackathon
+- **Hackathon**: Mindspace Hackathon
 - **Team**: StrawHats
 - **Project Name**: KhetiVeti
 
