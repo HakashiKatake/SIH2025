@@ -1,0 +1,68 @@
+{
+  "common": {
+    "continue": "కొనసాగించు",
+    "back": "వెనుకకు",
+    "next": "తరువాత",
+    "cancel": "రద్దు చేయి",
+    "save": "సేవ్ చేయి",
+    "edit": "సవరించు",
+    "delete": "తొలగించు",
+    "loading": "లోడ్ అవుతోంది...",
+    "error": "లోపం",
+    "success": "విజయం",
+    "retry": "మళ్లీ ప్రయత్నించు"
+  },
+  "language": {
+    "title": "మీ భాషను ఎంచుకోండి",
+    "english": "English",
+    "hindi": "हिंदी",
+    "telugu": "తెలుగు",
+    "tamil": "தமிழ்",
+    "kannada": "ಕನ್ನಡ",
+    "malayalam": "മലയാളം"
+  },
+  "userType": {
+    "title": "మీ పాత్రను ఎంచుకోండి",
+    "farmer": "రైతు",
+    "dealer": "వ్యాపారి",
+    "farmerDesc": "మీ పంటలను పెంచండి మరియు అమ్మండి",
+    "dealerDesc": "రైతుల నుండి పంటలను కొనుగోలు చేయండి"
+  },
+  "welcome": {
+    "farmerTitle": "స్వాగతం, రైతు!",
+    "dealerTitle": "స్వాగతం, వ్యాపారి!",
+    "farmerSubtitle": "మీ వ్యవసాయాన్ని నిర్వహించండి, పంటలను అమ్మండి మరియు నిపుణుల సలహా పొందండి",
+    "dealerSubtitle": "రైతుల నుండి నేరుగా నాణ్యమైన పంటలను పొందండి",
+    "getStarted": "ప్రారంభించండి"
+  },
+  "auth": {
+    "login": "లాగిన్",
+    "register": "సైన్ అప్",
+    "email": "ఇమెయిల్",
+    "phone": "ఫోన్ నంబర్",
+    "password": "పాస్‌వర్డ్",
+    "confirmPassword": "పాస్‌వర్డ్ నిర్ధారించండి",
+    "name": "పూర్తి పేరు",
+    "farmName": "వ్యవసాయ పేరు",
+    "businessName": "వ్యాపార పేరు",
+    "location": "స్థానం",
+    "loginWithEmail": "ఇమెయిల్‌తో లాగిన్ చేయండి",
+    "loginWithPhone": "ఫోన్‌తో లాగిన్ చేయండి",
+    "dontHaveAccount": "ఖాతా లేదా?",
+    "alreadyHaveAccount": "ఇప్పటికే ఖాతా ఉందా?",
+    "forgotPassword": "పాస్‌వర్డ్ మర్చిపోయారా?",
+    "createAccount": "ఖాతా సృష్టించండి"
+  },
+  "dashboard": {
+    "goodMorning": "శుభోదయం",
+    "goodAfternoon": "శుభ మధ్యాహ్నం",
+    "goodEvening": "శుభ సాయంత్రం",
+    "weather": "వాతావరణం",
+    "myField": "నా పొలం",
+    "marketplace": "మార్కెట్‌ప్లేస్",
+    "community": "సమాజం",
+    "schemes": "ప్రభుత్వ పథకాలు",
+    "scan": "పంట స్కాన్ చేయండి",
+    "chat": "AI సహాయకుడు"
+  }
+}
