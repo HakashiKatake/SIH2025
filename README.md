@@ -4,6 +4,13 @@
 
 **KhetiVeti** is a comprehensive digital farming platform designed to empower farmers with modern technology solutions. Built as a submission for **Smart India Hackathon (SIH) 2025** under the **Mindspace Hackathon** track, this application bridges the gap between traditional farming practices and cutting-edge agricultural technology.
 
+Demo:
+
+https://github.com/user-attachments/assets/878a75cc-564e-4109-920a-fa5676fc42d4
+
+
+
+
 ### 🏆 Hackathon Details
 - **Event**: Smart India Hackathon (SIH) 2025
 - **Hackathon**: Mindspace Hackathon
