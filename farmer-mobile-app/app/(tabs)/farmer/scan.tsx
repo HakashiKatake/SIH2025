@@ -18,6 +18,7 @@ import { useTranslation } from '../../../src/hooks/useTranslation';
 import { useFieldStore } from '../../../src/store/fieldStore';
 import { Colors, Typography, Spacing, BorderRadius } from '../../../src/constants/DesignSystem';
 import { CropStage } from '../../../src/types';
+import ScanResultsScreen from '../../../components/ScanResultsScreen';
 
 const { width, height } = Dimensions.get('window');
 
@@ -88,20 +89,20 @@ export default function FarmerScan() {
     setTimeout(() => {
       // Generate mock analysis result for Brinjal
       const mockResult = {
-        cropName: 'Brinjal',
+        cropName: 'Wheat',
         confidence: 95,
-        condition: 'healthy_crop_detected',
-        alert: 'Healthy Brinjal detected!',
+        condition: 'dry_crop_detected',
+        alert: 'Dry crop detected',
         solution: {
           fertilizers: {
-            nitrogen: t('scan.nitrogen'),
-            phosphorus: t('scan.phosphorus'),
-            potassium: t('scan.potassium'),
-            micronutrients: t('scan.micronutrients'),
+            nitrogen: 'Urea, Ammonium Sulphate',
+            phosphorus: 'DAP, SSP',
+            potassium: 'MOP, SOP',
+            micronutrients: 'Zinc Sulphate, Boron, Iron, Magnesium',
           },
           moisture: {
-            mulching: t('scan.doMulching'),
-            intercropping: t('scan.useIntercropping'),
+            mulching: 'Do mulching (cover soil with straw, leaves, plastic) to keep moisture.',
+            intercropping: 'Use intercropping (mixing crops like Bajra + Pulses) → better use of soil and water.',
           }
         },
         image: uri
@@ -109,14 +110,14 @@ export default function FarmerScan() {
       
       // Add Brinjal crop to field store
       addCrop({
-        name: 'Brinjal',
-        variety: 'Purple Long',
+        name: 'Wheat',
+        variety: 'Dry Wheat',
         plantingDate: new Date(),
-        expectedHarvestDate: new Date(Date.now() + (90 * 24 * 60 * 60 * 1000)), // 90 days from now
+        expectedHarvestDate: new Date(Date.now() + (120 * 24 * 60 * 60 * 1000)), // 120 days from now
         currentStage: CropStage.VEGETATIVE,
         fieldId: 'default-field',
         pesticidesUsed: [],
-        notes: ['Added via crop scanning'],
+        notes: ['Added via crop scanning - Dry condition detected'],
         photos: [uri],
       });
       
@@ -124,34 +125,37 @@ export default function FarmerScan() {
       setIsAnalyzing(false);
       setShowResults(true);
       
-      // Show success message
-      Alert.alert(
-        'Crop Added Successfully!',
-        'Brinjal has been added to your crops list.',
-        [
-          {
-            text: 'View Crops',
-            onPress: () => router.push('/farmer/field')
-          },
-          { text: 'OK' }
-        ]
-      );
+      // Show success message after a short delay
+      setTimeout(() => {
+        Alert.alert(
+          'Crop Added Successfully!',
+          'Wheat has been added to your crops list with dry condition alert.',
+          [
+            {
+              text: 'View Crops',
+              onPress: () => router.push('/farmer/field')
+            },
+            { text: 'OK' }
+          ]
+        );
+      }, 1000);
     }, 2500);
   };
 
   return (
-    <SafeAreaContainer backgroundColor="#000" statusBarStyle="light-content">
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="white" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('scan.title')}</Text>
-        <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-          <Ionicons name="cloud-upload-outline" size={20} color="white" />
-          <Text style={styles.uploadText}>{t('scan.uploadPhotos')}</Text>
-        </TouchableOpacity>
-      </View>
+    <>
+      <SafeAreaContainer backgroundColor="#000" statusBarStyle="light-content">
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('scan.title')}</Text>
+          <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+            <Ionicons name="cloud-upload-outline" size={20} color="white" />
+            <Text style={styles.uploadText}>{t('scan.uploadPhotos')}</Text>
+          </TouchableOpacity>
+        </View>
 
       <View style={styles.content}>
         {/* Camera Preview Area */}
@@ -234,7 +238,15 @@ export default function FarmerScan() {
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaContainer>
+      </SafeAreaContainer>
+
+      {/* Scan Results Modal */}
+      <ScanResultsScreen
+        visible={showResults}
+        onClose={() => setShowResults(false)}
+        result={analysisResult}
+      />
+    </>
   );
 }
 
