@@ -9,7 +9,8 @@ Demo:
 https://github.com/user-attachments/assets/878a75cc-564e-4109-920a-fa5676fc42d4
 
 
-
+Figma link: 
+https://www.figma.com/design/7e46GLDr9m3f7WL5879jlS/KhetiVeti?node-id=0-1&t=vOs4eclH1j0lNTz4-1
 
 ### 🏆 Hackathon Details
 - **Event**: Smart India Hackathon (SIH) 2025
